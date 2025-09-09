@@ -1,306 +1,74 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>偷訂車隊｜單檔獨立版</title>
-<style>
-:root{--bg:#f6f7f9;--ink:#111;--blue:#0d63ff;--ink2:#333;--line:#e1e7ee;--muted:#666}
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:var(--bg);color:var(--ink)}
-header{background:#0c1b2a;color:#fff;padding:12px 16px;font-weight:700}
-main{padding:16px;max-width:1100px;margin:0 auto}
-.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
-h1,h2,h3{margin:6px 0 8px}label{font-size:13px;color:var(--ink2)}
-input,select,textarea{width:100%;padding:10px;border:1px solid #c9d1db;border-radius:8px;background:#fafbfc}
-.grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.btn{padding:10px 14px;border:0;border-radius:8px;background:var(--blue);color:#fff;font-weight:700;cursor:pointer}
-.btn.secondary{background:#1f2937}.btn.warn{background:#b91c1c}.btn.ghost{background:#e5e7eb;color:var(--ink)}
-table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #eef2f7;padding:8px;text-align:left;font-size:14px}
-.muted{color:var(--muted);font-size:13px}.pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#eef2ff;color:var(--blue);font-size:12px}
-.right{margin-left:auto}a.nav{margin-right:10px}nav{background:#e9eef3;padding:8px 16px}footer{padding:12px 16px;color:#777}
-.hidden{display:none}.details{background:#f9fafb;border:1px solid #e5e7eb;padding:8px;border-radius:8px;margin-top:6px}
-.bad{color:#b91c1c}.ok{color:#05823f}
-</style>
+  <meta charset="UTF-8">
+  <title>偷訂車隊系統</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <style>
+    body {
+      margin:0; font-family: "Noto Sans TC", "微軟正黑體", sans-serif;
+      background:#0b1220; color:#fff; display:flex; flex-direction:column;
+      align-items:center; padding:20px;
+    }
+    h1 {
+      margin:20px 0; font-size:22px; font-weight:700; text-align:center;
+    }
+    .card {
+      width:100%; max-width:400px; margin:12px 0; padding:20px;
+      border-radius:16px; background:#1f2937; box-shadow:0 6px 20px rgba(0,0,0,.4);
+      animation:fadeIn .6s ease;
+    }
+    .card h2 { font-size:18px; margin-bottom:12px; }
+    input {
+      width:100%; padding:14px; margin:10px 0; font-size:16px;
+      border-radius:12px; border:0; outline:none; background:#111827; color:#fff;
+    }
+    button {
+      width:100%; padding:14px; margin-top:10px;
+      font-size:16px; font-weight:700; border:0; border-radius:12px;
+      cursor:pointer; transition:transform .1s;
+    }
+    button:active { transform:scale(.97); }
+    .admin { background:#3b82f6; }
+    .operator { background:#8b5cf6; }
+    .driver { background:#22c55e; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+  </style>
 </head>
 <body>
-<header>偷訂車隊系統｜單檔獨立版</header>
-<nav>
-  <a class="nav" href="#" onclick="show('entry')">入口</a>
-  <a class="nav" href="#" onclick="show('operator')">發單端</a>
-  <a class="nav" href="#" onclick="show('driver')">司機端</a>
-  <a class="nav" href="#" onclick="show('admin')">後台</a>
-  <span class="right muted" id="who"></span>
-</nav>
+  <h1>🚚 偷訂車隊登入</h1>
 
-<main>
-  <!-- Entry -->
-  <section id="sec-entry" class="card">
-    <h3>選擇角色並登入</h3>
-    <div class="grid g3">
-      <div class="card"><h4>後台管理</h4><label>密碼</label><input id="adminPwd" type="password" placeholder="steading-admin">
-        <button class="btn" onclick="loginAdmin(); show('admin')">登入後台</button>
-        <p class="muted">管理司機、訂單、參數、黑名單。</p>
-      </div>
-      <div class="card"><h4>偷訂發單端</h4><label>密碼</label><input id="opPwd" type="password" placeholder="steading-op">
-        <button class="btn" onclick="loginOp(); show('operator')">登入發單端</button><p class="muted">僅偷訂可發佈任務。</p>
-      </div>
-      <div class="card"><h4>司機端</h4><label>手機號碼</label><input id="drvPhone" placeholder="09xx-xxx-xxx">
-        <button class="btn" onclick="loginDriver(); show('driver')">以手機登入</button><p class="muted">需先註冊且通過審核。</p>
-      </div>
-    </div>
-    <div class="row"><button class="btn ghost" onclick="seedDemo()">建立示例資料</button><span class="muted">資料儲存在瀏覽器 localStorage。</span></div>
-  </section>
+  <div class="card">
+    <h2>管理員</h2>
+    <input type="password" id="adminPwd" placeholder="輸入密碼 (steading-admin)">
+    <button class="admin" onclick="login('admin')">登入管理後台</button>
+  </div>
 
-  <!-- Operator -->
-  <section id="sec-operator" class="hidden">
-    <div class="card">
-      <div class="row"><h3>發布任務</h3><span class="right muted" id="opWho"></span></div>
-      <div class="grid g3">
-        <div><label>配送車種</label><select id="veh"><option value="bike">機車</option><option value="car">汽車</option></select></div>
-        <div><label>基礎運費（元）</label><input id="baseFare" type="number" min="0" value="60"></div>
-        <div><label>預估里程（公里）</label><input id="km" type="number" step="0.1" min="0"></div>
-      </div>
-      <div class="grid g2" style="margin-top:8px">
-        <div><label>起點</label><input id="from" placeholder="起點地址或代碼"></div>
-        <div><label>終點（第一站）</label><input id="to1" placeholder="終點地址或代碼"></div>
-      </div>
-      <div class="grid g3" id="extraStops"></div>
-      <div class="row" style="margin-top:6px"><button class="btn ghost" id="addStop">+ 新增額外站點</button><span class="muted">多點將依「每站加價」計算</span></div>
-      <div class="grid g3" style="margin-top:8px">
-        <div><label>保溫需求</label><select id="insulated"><option value="no">否</option><option value="yes">是（加價）</option></select></div>
-        <div><label>備註</label><input id="note" placeholder="門禁/取餐編號/溫層等"></div>
-      </div>
-      <div class="row" style="margin-top:10px"><button class="btn" id="calcFare">試算費用</button><div id="farePreview" class="muted"></div><button class="btn secondary right" id="createJob">發布訂單</button></div>
-    </div>
-    <div class="card">
-      <div class="row"><h3>待接訂單</h3><button class="btn ghost right" id="refreshOpenJobs">重新整理</button></div>
-      <table id="openJobsTbl"><thead><tr><th>#</th><th>車種</th><th>里程</th><th>站點數</th><th>費用</th><th>備註</th></tr></thead><tbody></tbody></table>
-    </div>
-  </section>
+  <div class="card">
+    <h2>發單端</h2>
+    <input type="password" id="opPwd" placeholder="輸入密碼 (steading-op)">
+    <button class="operator" onclick="login('op')">登入發單端</button>
+  </div>
 
-  <!-- Driver -->
-  <section id="sec-driver" class="hidden">
-    <div class="card">
-      <div class="row"><h3>司機註冊</h3><span class="right muted" id="drvWho"></span></div>
-      <div class="grid g3">
-        <div><label>姓名</label><input id="dName"></div>
-        <div><label>手機</label><input id="dPhone"></div>
-        <div><label>Email</label><input id="dEmail" type="email"></div>
-        <div><label>車種</label><select id="dVeh"><option value="bike">機車</option><option value="car">汽車</option></select></div>
-        <div><label>推薦碼（選填）</label><input id="refCode"></div>
-        <div><label>地址（選填）</label><input id="dAddr"></div>
-      </div>
-      <div class="grid g3" style="margin-top:8px">
-        <div><label>身分證字號</label><input id="idNo"></div>
-        <div><label>駕照號碼</label><input id="licNo"></div>
-        <div><label>行照號碼</label><input id="vehReg"></div>
-      </div>
-      <div class="grid g2" style="margin-top:8px">
-        <div class="card"><b>保險</b>
-          <div><input type="checkbox" id="insCompulsory"> <label for="insCompulsory">強制險</label></div>
-          <div><input type="checkbox" id="insTPL"> <label for="insTPL">第三人責任險</label></div>
-          <div><input type="checkbox" id="insAcc"> <label for="insAcc">意外險/團險（自願加購）</label></div>
-        </div>
-        <div class="card"><b>標準配備</b>
-          <div><input type="checkbox" id="gearHelmet"> <label for="gearHelmet">安全帽（CNS）</label></div>
-          <div><input type="checkbox" id="gearVest"> <label for="gearVest">反光背心/防摔衣</label></div>
-          <div><input type="checkbox" id="gearInsul"> <label for="gearInsul">保溫箱/袋</label></div>
-          <div><input type="checkbox" id="gearRack"> <label for="gearRack">機車後架/汽車止滑墊</label></div>
-          <div><input type="checkbox" id="gearRain"> <label for="gearRain">雨具</label></div>
-          <div><input type="checkbox" id="gearPhone"> <label for="gearPhone">智慧手機 + 行動電源</label></div>
-          <div id="carExtras" class="hidden">
-            <div><input type="checkbox" id="gearTri"> <label for="gearTri">警示三角架（汽車）</label></div>
-            <div><input type="checkbox" id="gearExt"> <label for="gearExt">滅火器（汽車）</label></div>
-          </div>
-        </div>
-      </div>
-      <div class="grid g3" style="margin-top:8px">
-        <div><label>良民證核發日</label><input id="policeDate" type="date"></div>
-        <div><label>餐飲業健檢日期</label><input id="medDate" type="date"></div>
-        <div>
-          <label>計酬方式（註冊時選定後固定）</label>
-          <div class="row">
-            <label><input type="radio" name="payModel" value="order"> 接單制</label>
-            <label><input type="radio" name="payModel" value="hourly"> 時薪制</label>
-          </div>
-          <div class="details"><b>接單制：</b>比照 Lalamove，機車 +30、汽車 +50；含里程、多點、保溫加價。<br>
-          <b>時薪制：</b>$300–$500/時，<u>每小時至少3單、至多5單</u> KPI。</div>
-        </div>
-      </div>
-      <div class="details" style="margin-top:8px">
-        <details>
-          <summary>展開承攬契約全文</summary>
-          <div id="contractFull">
-            <h3>偷訂外送車隊承攬契約（全文）</h3>
-            <ol>
-              <li><b>契約性質：</b>承攬非僱傭；計酬依註冊選擇（接單制或時薪制）。平台不負擔勞健保與僱傭給付。</li>
-              <li><b>工作內容：</b>依派單/搶單提供配送，遵守交通法規，妥善保護餐點。</li>
-              <li><b>費用：</b>接單制比照平台公告，含里程、多點、保溫加價，並加計車種加價：機車 +30、汽車 +50；時薪制每小時 300–500 元，KPI 3–5 單/小時；平台得公告調整。</li>
-              <li><b>安全與配備：</b>須有合法車輛、強制險、第三人責任險；安全帽、反光背心或防摔衣、保溫箱/袋。意外險/團險自願加購。</li>
-              <li><b>資格文件：</b>身分證、駕照、行照、良民證、餐飲業勞工基本健檢，須真實有效；偽造即終止並列黑名單。</li>
-              <li><b>積分與停權：</b>依準時率、完成率、客訴與服務評分調整；未達門檻或重大違規得停權或終止。</li>
-              <li><b>責任：</b>交通違規與事故自負；餐點毀損或遺失平台得扣減報酬或求償。</li>
-              <li><b>期間與終止：</b>自線上簽署生效一年，自動展延；重大違規或積分過低得隨時終止。</li>
-              <li><b>個資與隱私：</b>依平台隱私政策處理，用於驗證、結算與客服。</li>
-              <li><b>爭議解決：</b>協商不成，以平台所在地地方法院為第一審管轄。</li>
-            </ol>
-            <p>本人已詳閱並同意。</p>
-          </div>
-        </details>
-        <label class="row" style="margin-top:6px"><input type="checkbox" id="agreeContract"> 我已閱讀並同意承攬契約</label>
-      </div>
-      <div class="row" style="margin-top:8px"><button class="btn" id="registerDriver">送出申請</button><span class="muted">提交後待後台審核通過才能接單。</span></div>
-    </div>
+  <div class="card">
+    <h2>司機</h2>
+    <input type="text" id="driverPhone" placeholder="輸入手機號碼">
+    <button class="driver" onclick="login('driver')">以手機登入</button>
+  </div>
 
-    <div class="card">
-      <div class="row"><h3>接單與歷史</h3>
-        <input id="driverPhoneLogin" placeholder="輸入註冊手機登入"><button class="btn ghost" id="driverLogin">登入</button>
-        <span id="driverLoginState" class="muted"></span><button class="btn right" id="refreshJobs">更新清單</button></div>
-      <div class="row muted" id="driverBadge"></div>
-      <h4>可接訂單</h4>
-      <table id="jobsForDriver"><thead><tr><th>#</th><th>車種</th><th>里程</th><th>站點</th><th>試算</th><th>操作</th></tr></thead><tbody></tbody></table>
-      <h4 style="margin-top:12px">進行中/已完成</h4>
-      <table id="driverOrders"><thead><tr><th>#</th><th>狀態</th><th>里程</th><th>費用</th><th>評分</th><th>操作</th></tr></thead><tbody></tbody></table>
-    </div>
-  </section>
-
-  <!-- Admin -->
-  <section id="sec-admin" class="hidden">
-    <div class="card">
-      <div class="row"><h3>系統參數</h3><span class="right muted" id="admWho"></span></div>
-      <div class="grid g3">
-        <div><label>每公里單價（元）</label><input id="pPerKm" type="number" value="10"></div>
-        <div><label>多點每站加價（元）</label><input id="pPerStop" type="number" value="15"></div>
-        <div><label>保溫加價（元）</label><input id="pInsul" type="number" value="10"></div>
-        <div><label>機車加價（元）</label><input id="pBike" type="number" value="30"></div>
-        <div><label>汽車加價（元）</label><input id="pCar" type="number" value="50"></div>
-        <div><label>黑名單扣點門檻</label><input id="blackTH" type="number" value="100"></div>
-      </div>
-      <div class="row" style="margin-top:8px"><button class="btn" id="saveCfg">儲存參數</button><span id="cfgSaved" class="muted"></span></div>
-    </div>
-    <div class="card">
-      <h3>司機審核</h3>
-      <table id="driversTbl"><thead><tr><th>姓名</th><th>手機</th><th>信箱</th><th>車種</th><th>計酬</th><th>保險/配備</th><th>良民證/健檢</th><th>積分</th><th>狀態</th><th>操作</th></tr></thead><tbody></tbody></table>
-    </div>
-    <div class="card">
-      <h3>訂單監控</h3>
-      <table id="jobsTbl"><thead><tr><th>#</th><th>車種</th><th>狀態</th><th>里程</th><th>站點</th><th>費用</th><th>司機</th></tr></thead><tbody></tbody></table>
-    </div>
-    <div class="row card"><div class="row">
-      <button class="btn ghost" id="exportDrivers">匯出司機CSV</button>
-      <button class="btn ghost" id="exportJobs">匯出訂單CSV</button>
-      <button class="btn warn" id="resetAll">清空全部資料</button>
-    </div></div>
-  </section>
-</main>
-
-<footer><button class="btn ghost" onclick="logout()">登出</button></footer>
-
-<script>
-// === Data Layer ===
-const DB={get:(k,def)=>{try{return JSON.parse(localStorage.getItem(k))??def}catch{return def}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),now:()=>new Date().toISOString()};
-const KEYS={drivers:'stea_drivers',jobs:'stea_jobs',cfg:'stea_cfg',admin:'stea_admin',op:'stea_op',session:'stea_session'};
-if(!DB.get(KEYS.cfg)) DB.set(KEYS.cfg,{perKm:10,perStop:15,insul:10,bike:30,car:50,blackTH:100});
-if(!DB.get(KEYS.admin)) DB.set(KEYS.admin,{pwd:'steading-admin'});
-if(!DB.get(KEYS.op)) DB.set(KEYS.op,{pwd:'steading-op'});
-
-// === Session/Auth ===
-function setSession(role,payload){DB.set(KEYS.session,{role,...payload,at:DB.now()})}
-function getSession(){return DB.get(KEYS.session,null)}
-function logout(){localStorage.removeItem(KEYS.session);show('entry')}
-function show(name){
-  const s=getSession();
-  if(name==='operator'&&(!s||s.role!=='operator')){alert('僅偷訂發單端可用');name='entry'}
-  if(name==='admin'&&(!s||s.role!=='admin')){alert('僅後台管理可用');name='entry'}
-  for(const id of ['entry','operator','driver','admin']) document.getElementById('sec-'+id).classList.add('hidden');
-  document.getElementById('sec-'+name).classList.remove('hidden');
-  document.getElementById('who').textContent=s?(s.role+'：'+(s.who||s.phone||'-')):'未登入';
-  if(name==='operator') initOperator();
-  if(name==='driver') initDriver();
-  if(name==='admin') initAdmin();
-}
-document.addEventListener('DOMContentLoaded',()=>show('entry'));
-
-function loginAdmin(){const pwd=(document.getElementById('adminPwd')?.value||'').trim();const a=DB.get(KEYS.admin,{pwd:'steading-admin'});if(pwd!==a.pwd)return alert('密碼錯誤');setSession('admin',{who:'Admin'})}
-function loginOp(){const pwd=(document.getElementById('opPwd')?.value||'').trim();const o=DB.get(KEYS.op,{pwd:'steading-op'});if(pwd!==o.pwd)return alert('密碼錯誤');setSession('operator',{who:'Operator'})}
-function loginDriver(){const phone=(document.getElementById('drvPhone')?.value||'').trim();const ds=DB.get(KEYS.drivers,[]);const d=ds.find(x=>x.phone===phone);if(!d)return alert('找不到司機，請先註冊');if(d.status!=='approved')return alert('尚未審核通過');setSession('driver',{who:d.name,id:d.id,phone:d.phone})}
-
-// === Operator ===
-function initOperator(){
-  const s=getSession();document.getElementById('opWho').textContent='使用者：'+(s?.who||'-')
-  let stopCount=0;const wrap=document.getElementById('extraStops');
-  function renderStops(){wrap.innerHTML='';for(let i=0;i<stopCount;i++){const div=document.createElement('div');div.innerHTML='<label>額外站點 '+(i+1)+'</label><input class="stop" placeholder="站點地址或代碼">';wrap.appendChild(div)}}
-  document.getElementById('addStop').onclick=()=>{stopCount++;renderStops()}
-  function pricePreview(){const cfg=DB.get(KEYS.cfg,{}),veh=document.getElementById('veh').value,base=Number(document.getElementById('baseFare').value||0),km=Number(document.getElementById('km').value||0),stops=document.querySelectorAll('#extraStops .stop').length,ins=document.getElementById('insulated').value==='yes';let p=base+km*cfg.perKm+stops*cfg.perStop;p+=(veh==='bike'?cfg.bike:cfg.car);if(ins)p+=cfg.insul;document.getElementById('farePreview').textContent='試算：$'+Math.round(p);return Math.round(p)}
-  document.getElementById('calcFare').onclick=pricePreview
-  function listOpenJobs(){const jobs=DB.get(KEYS.jobs,[]),tb=document.querySelector('#openJobsTbl tbody');tb.innerHTML='';jobs.filter(j=>j.status==='open').forEach(j=>{const tr=document.createElement('tr');tr.innerHTML='<td>'+j.id+'</td><td>'+(j.veh==='bike'?'機車':'汽車')+'</td><td>'+(j.km||'-')+'</td><td>'+(1+(j.stops?.length||0))+'</td><td>$'+j.price+'</td><td>'+(j.note||'')+'</td>';tb.appendChild(tr)})}
-  document.getElementById('refreshOpenJobs').onclick=listOpenJobs
-  document.getElementById('createJob').onclick=()=>{const veh=document.getElementById('veh').value,base=Number(document.getElementById('baseFare').value||0),km=Number(document.getElementById('km').value||0),stops=Array.from(document.querySelectorAll('#extraStops .stop')).map(x=>x.value).filter(Boolean),price=pricePreview(),job={id:uid('J'),veh,base,km,note:document.getElementById('note').value,from:document.getElementById('from').value,to1:document.getElementById('to1').value,stops,insulated:document.getElementById('insulated').value,price,status:'open',driver:null,createdAt:nowISO()};const jobs=DB.get(KEYS.jobs,[]);jobs.push(job);DB.set(KEYS.jobs,jobs);listOpenJobs();alert('訂單已發布：'+job.id+' 金額$'+price)};
-  renderStops();listOpenJobs()
-}
-
-// === Driver ===
-function initDriver(){
-  const s=getSession();if(s?.role==='driver')document.getElementById('drvWho').textContent='司機：'+s.who
-  function showCarExtras(){const veh=document.getElementById('dVeh').value;document.getElementById('carExtras').classList.toggle('hidden',veh!=='car')}
-  document.getElementById('dVeh').onchange=showCarExtras;showCarExtras()
-  document.getElementById('registerDriver').onclick=()=>{
-    const must=['dName','dPhone','dEmail','idNo','licNo','vehReg','policeDate','medDate'];for(const k of must){if(!document.getElementById(k).value.trim())return alert('請填寫完整資料')}
-    const drivers=DB.get(KEYS.drivers,[]),phone=byId('dPhone').value.trim(),email=byId('dEmail').value.trim().toLowerCase()
-    if(drivers.some(d=>d.phone===phone))return alert('此手機已註冊')
-    if(drivers.some(d=>String(d.email||'').toLowerCase()===email))return alert('此 Email 已註冊')
-    const pay=document.querySelector('input[name="payModel"]:checked');if(!pay)return alert('請選擇計酬方式')
-    if(!byId('agreeContract').checked)return alert('請先勾選同意承攬契約')
-    const gearOK=byId('gearHelmet').checked&&byId('gearInsul').checked&&byId('gearPhone').checked
-    const insOK=byId('insCompulsory').checked&&byId('insTPL').checked
-    if(!gearOK||!insOK)return alert('需至少：安全帽+保溫箱+手機/電源，且有 強制險+第三人責任險')
-    const drv={id:uid('D'),name:byId('dName').value.trim(),phone,email,veh:byId('dVeh').value,addr:byId('dAddr').value.trim(),idNo:byId('idNo').value.trim(),licNo:byId('licNo').value.trim(),vehReg:byId('vehReg').value.trim(),policeDate:byId('policeDate').value,medDate:byId('medDate').value,payModel:pay.value,contractAgreedAt:nowISO(),ins:{compulsory:byId('insCompulsory').checked,tpl:byId('insTPL').checked,acc:byId('insAcc').checked},gear:{helmet:byId('gearHelmet').checked,vest:byId('gearVest').checked,insul:byId('gearInsul').checked,rack:byId('gearRack').checked,rain:byId('gearRain').checked,phone:byId('gearPhone').checked,tri:byId('gearTri')?.checked||false,ext:byId('gearExt')?.checked||false},points:0,strikes:0,status:'pending',hourlyLog:[],referralFrom:byId('refCode').value.trim()||null,referralCode:'R'+Math.random().toString(36).slice(2,6).toUpperCase(),createdAt:nowISO()}
-    drivers.push(drv);DB.set(KEYS.drivers,drivers);alert('申請已送出，請等待審核。你的推薦碼：'+drv.referralCode)
-  }
-  byId('driverLogin').onclick=()=>{const phone=byId('driverPhoneLogin').value.trim(),drivers=DB.get(KEYS.drivers,[]),d=drivers.find(x=>x.phone===phone);if(!d)return alert('找不到司機');if(d.status!=='approved')return alert('尚未審核通過');setSession('driver',{who:d.name,id:d.id,phone:d.phone});byId('driverLoginState').textContent='已登入：'+d.name+'（'+(d.payModel==='hourly'?'時薪制':'接單制')+'）';listJobsForDriver();listDriverOrders();driverBadges()}
-  byId('refreshJobs').onclick=()=>{listJobsForDriver();listDriverOrders()}
-  function driverBadges(){const d=getDriverBySession();if(!d)return;const cfg=DB.get(KEYS.cfg,{}),black=d.points>=cfg.blackTH,mode=d.payModel==='hourly'?'時薪制KPI：每小時3~5單':'接單制';byId('driverBadge').innerHTML='<span class="pill">'+mode+'</span> <span class="pill">積分：'+d.points+'</span> <span class="'+(black?'bad':'ok')+'">狀態：'+(black?'黑名單':'良好')+'</span>'}
-  function listJobsForDriver(){const tb=byId('jobsForDriver').querySelector('tbody');tb.innerHTML='';const d=getDriverBySession();if(!d||d.status!=='approved')return;const jobs=DB.get(KEYS.jobs,[]).filter(j=>j.status==='open');const hasOngoing=DB.get(KEYS.jobs,[]).some(j=>j.driver===d.id&&j.status==='ongoing');jobs.forEach(j=>{const tr=document.createElement('tr');tr.innerHTML='<td>'+j.id+'</td><td>'+(j.veh==='bike'?'機車':'汽車')+'</td><td>'+(j.km||'-')+'</td><td>'+(1+(j.stops?.length||0))+'</td><td>$'+j.price+'</td><td><button class="btn">接單</button></td>';const btn=tr.querySelector('button');btn.onclick=()=>{if(DB.get(KEYS.jobs,[]).some(x=>x.driver===d.id&&x.status==='ongoing'))return alert('已有進行中訂單，請先完單');if(d.veh!==j.veh)return alert('車種不符');if(d.payModel==='hourly'){const cnt=countCompletedInLastHour(d);if(cnt>=5)return alert('本小時已達5單上限')}const all=DB.get(KEYS.jobs,[]),target=all.find(x=>x.id===j.id);target.status='ongoing';target.driver=d.id;DB.set(KEYS.jobs,all);listJobsForDriver();listDriverOrders()};if(hasOngoing)btn.disabled=true;tb.appendChild(tr)})}
-  function listDriverOrders(){const tb=byId('driverOrders').querySelector('tbody');tb.innerHTML='';const d=getDriverBySession();if(!d)return;const jobs=DB.get(KEYS.jobs,[]).filter(j=>j.driver===d.id);jobs.forEach(j=>{const tr=document.createElement('tr');tr.innerHTML='<td>'+j.id+'</td><td>'+j.status+'</td><td>'+(j.km||'-')+'</td><td>$'+j.price+'</td><td>'+(j.rating??'-')+'</td><td>'+(j.status==='ongoing'?'<input type="number" step="0.1" min="0" placeholder="實際公里" style="width:110px"> <button class="btn">完單</button>':j.status==='done'?'<button class="btn ghost">+1分</button> <button class="btn warn">-10分</button>':'')+'</td>';const btns=tr.querySelectorAll('button');if(j.status==='ongoing'){const kmIn=tr.querySelector('input');btns[0].onclick=()=>{const kmReal=Number(kmIn.value||j.km||0),cfg=DB.get(KEYS.cfg,{});let p=Number(j.base||0)+kmReal*cfg.perKm+(j.stops?.length||0)*cfg.perStop;p+=(j.veh==='bike'?cfg.bike:cfg.car);if(j.insulated==='yes')p+=cfg.insul;j.price=Math.round(p);j.km=kmReal;j.status='done';j.rating=5;const all=DB.get(KEYS.jobs,[]).map(x=>x.id===j.id?j:x);DB.set(KEYS.jobs,all);const drivers=DB.get(KEYS.drivers,[]),me=drivers.find(x=>x.id===d.id);me.points=(me.points||0)+5;if(me.payModel==='hourly'){me.hourlyLog=me.hourlyLog||[];me.hourlyLog.push(Date.now());const cnt=countCompletedInLastHour(me);if(cnt<3)alert('提醒：本小時完成單數小於3單')}DB.set(KEYS.drivers,drivers);listDriverOrders();driverBadges()}} else if(j.status==='done'){btns[0].onclick=()=>{adjustPoints(d.id,+1);listDriverOrders();driverBadges()};btns[1].onclick=()=>{adjustPoints(d.id,-10);listDriverOrders();driverBadges()}}tb.appendChild(tr)})}
-}
-
-// === Admin ===
-function initAdmin(){const s=getSession();document.getElementById('admWho').textContent='使用者：'+(s?.who||'-');renderCfg();renderDrivers();renderJobsAdmin();byId('saveCfg').onclick=saveCfg;byId('exportDrivers').onclick=exportDrivers;byId('exportJobs').onclick=exportJobs;byId('resetAll').onclick=resetAll}
-function renderCfg(){const cfg=DB.get(KEYS.cfg,{});byId('pPerKm').value=cfg.perKm;byId('pPerStop').value=cfg.perStop;byId('pInsul').value=cfg.insul;byId('pBike').value=cfg.bike;byId('pCar').value=cfg.car;byId('blackTH').value=cfg.blackTH}
-function saveCfg(){const cfg={perKm:Number(byId('pPerKm').value||0),perStop:Number(byId('pPerStop').value||0),insul:Number(byId('pInsul').value||0),bike:Number(byId('pBike').value||0),car:Number(byId('pCar').value||0),blackTH:Number(byId('blackTH').value||0)};DB.set(KEYS.cfg,cfg);byId('cfgSaved').textContent='已儲存';setTimeout(()=>byId('cfgSaved').textContent='',1200)}
-function renderDrivers(){const tb=byId('driversTbl').querySelector('tbody');tb.innerHTML='';const cfg=DB.get(KEYS.cfg,{});DB.get(KEYS.drivers,[]).forEach(d=>{const okIns=d.ins?.compulsory&&d.ins?.tpl,okGear=d.gear?.helmet&&d.gear?.insul&&d.gear?.phone;const tr=document.createElement('tr');tr.innerHTML='<td>'+d.name+'</td><td>'+d.phone+'</td><td>'+(d.email||'')+'</td><td>'+(d.veh==='bike'?'機車':'汽車')+'</td><td>'+(d.payModel==='hourly'?'時薪制':'接單制')+'</td><td>'+(okIns?'<span class="ok">保險齊</span>':'<span class="bad">欠缺</span>')+'／'+(okGear?'<span class="ok">配備齊</span>':'<span class="bad">欠缺</span>')+'</td><td>'+(d.policeDate||'-')+' / '+(d.medDate||'-')+'</td><td>'+(d.points||0)+'</td><td>'+d.status+'</td><td class="row"><button class="btn" '+(d.status==='approved'?'disabled':'')+'>核可</button> <button class="btn warn">停權</button> <button class="btn ghost">黑名單</button></td>';const [b1,b2,b3]=tr.querySelectorAll('button');b1.onclick=()=>{d.status='approved';saveDriver(d);renderDrivers()};b2.onclick=()=>{d.status='suspended';saveDriver(d);renderDrivers()};b3.onclick=()=>{d.points=cfg.blackTH;saveDriver(d);renderDrivers()};tb.appendChild(tr)})}
-function renderJobsAdmin(){const tb=byId('jobsTbl').querySelector('tbody');tb.innerHTML='';const drivers=DB.get(KEYS.drivers,[]);DB.get(KEYS.jobs,[]).forEach(j=>{const drv=drivers.find(d=>d.id===j.driver);const tr=document.createElement('tr');tr.innerHTML='<td>'+j.id+'</td><td>'+(j.veh==='bike'?'機車':'汽車')+'</td><td>'+j.status+'</td><td>'+(j.km||'-')+'</td><td>'+(1+(j.stops?.length||0))+'</td><td>$'+j.price+'</td><td>'+(drv?drv.name:'-')+'</td>';tb.appendChild(tr)})}
-
-// === Utilities ===
-function uid(p){return p+'_'+Math.random().toString(36).slice(2,8)}
-function nowISO(){return new Date().toISOString()}
-function byId(id){return document.getElementById(id)}
-function getDriverBySession(){const s=getSession();if(!s||s.role!=='driver')return null;const drivers=DB.get(KEYS.drivers,[]);return drivers.find(x=>x.id===s.id||x.phone===s.phone)||null}
-function adjustPoints(driverId,delta){const drivers=DB.get(KEYS.drivers,[]),d=drivers.find(x=>x.id===driverId);if(!d)return;d.points=Math.max(0,(d.points||0)+delta);saveDriver(d)}
-function saveDriver(d){const arr=DB.get(KEYS.drivers,[]).map(x=>x.id===d.id?d:x);DB.set(KEYS.drivers,arr)}
-function toCSV(rows){return rows.map(r=>r.map(x=>('"'+String(x??'').replaceAll('"','""')+'"')).join(',')).join('\n')}
-function download(name,content){const blob=new Blob([content],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
-function exportDrivers(){const arr=DB.get(KEYS.drivers,[]),rows=[['id','name','phone','email','veh','payModel','status','points','policeDate','medDate','referralCode','referralFrom','createdAt']];arr.forEach(d=>rows.push([d.id,d.name,d.phone,d.email,d.veh,d.payModel,d.status,d.points,d.policeDate,d.medDate,d.referralCode,d.referralFrom,d.createdAt]));download('drivers.csv',toCSV(rows))}
-function exportJobs(){const arr=DB.get(KEYS.jobs,[]),rows=[['id','veh','status','km','stops','price','driver','createdAt']];arr.forEach(j=>rows.push([j.id,j.veh,j.status,j.km,(j.stops||[]).length+1,j.price,j.driver||'',j.createdAt]));download('jobs.csv',toCSV(rows))}
-function resetAll(){if(!confirm('確定清除所有資料？'))return;localStorage.removeItem(KEYS.drivers);localStorage.removeItem(KEYS.jobs);alert('已清除。請重新整理頁面。')}
-function countCompletedInLastHour(driver){const now=Date.now(),oneHour=3600000;return (driver.hourlyLog||[]).filter(ts=>now-ts<=oneHour).length}
-
-// === Demo Seed ===
-function seedDemo(){
-  if(DB.get(KEYS.drivers,[]).length===0){
-    const d1={id:uid('D'),name:'王小明',phone:'0912-000-001',email:'a@x.com',veh:'bike',status:'approved',payModel:'order',points:12,ins:{compulsory:true,tpl:true,acc:false},gear:{helmet:true,insul:true,phone:true},policeDate:'2025-06-01',medDate:'2025-05-20',referralCode:'RABCD',hourlyLog:[]};
-    const d2={id:uid('D'),name:'陳小美',phone:'0922-000-002',email:'b@x.com',veh:'car',status:'pending',payModel:'hourly',points:0,ins:{compulsory:true,tpl:true,acc:true},gear:{helmet:true,insul:true,phone:true,tri:true,ext:true},policeDate:'2025-07-01',medDate:'2025-06-10',referralCode:'REF02',hourlyLog:[]};
-    DB.set(KEYS.drivers,[d1,d2]);
-  }
-  if(DB.get(KEYS.jobs,[]).length===0){
-    const cfg=DB.get(KEYS.cfg,{perKm:10,perStop:15,insul:10,bike:30,car:50});
-    const j1={id:uid('J'),veh:'bike',base:60,km:3.5,stops:[],insulated:'no',price:60+Math.round(3.5*cfg.perKm)+cfg.bike,status:'open',driver:null,createdAt:nowISO()};
-    const j2={id:uid('J'),veh:'car',base:60,km:6.2,stops:['S1'],insulated:'yes',price:60+Math.round(6.2*cfg.perKm)+cfg.perStop+cfg.car+cfg.insul,status:'open',driver:null,createdAt:nowISO()};
-    DB.set(KEYS.jobs,[j1,j2]);
-  }
-  alert('示例資料已建立')
-}
-</script>
+  <script>
+    function login(role){
+      if(role==='admin'){
+        const pwd=document.getElementById("adminPwd").value;
+        alert(pwd==='steading-admin'?"✅ 管理員登入成功":"❌ 密碼錯誤");
+      } else if(role==='op'){
+        const pwd=document.getElementById("opPwd").value;
+        alert(pwd==='steading-op'?"✅ 發單端登入成功":"❌ 密碼錯誤");
+      } else if(role==='driver'){
+        const phone=document.getElementById("driverPhone").value;
+        alert(phone.startsWith("09")?"✅ 司機登入成功":"❌ 手機格式錯誤");
+      }
+    }
+  </script>
 </body>
 </html>
